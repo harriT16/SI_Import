@@ -37,16 +37,21 @@ combine.drop(columns=['description_combined'], inplace = True)
 
 data['REFERENCE_NO'] = ''
 
-combine['unique_id'] = combine['Date'].astype(str) + combine['Transaction Type']
-combine['LINE_NO'] = combine.groupby('unique_id').cumcount() + 1
-data['LINE_NO'] = combine['LINE_NO']
+data['unique_id'] = combine['Date'].astype(str) + combine['Transaction Type']
+data = data.sort_values(by='unique_id')
+data['LINE_NO'] = data.groupby('unique_id').cumcount() + 1
+data.drop(columns=['unique_id'], inplace=True)
 
-combine.drop(columns=['unique_id'], inplace=True)
+#data['LINE_NO'] = combine['LINE_NO']
+
 data['ACCT_NO'] = combine['Account'].map(account_map)
 data['LOCATION_ID'] = ''
 data['DEPT_ID'] = ''
 data['DOCUMENT'] = combine['Num']
 data['MEMO'] = combine['Memo/Description']
+
+combine['Debit'].fillna(0, inplace = True)
+combine['Credit'].fillna(0, inplace = True)
 data['DEBIT'] = combine['Debit'] - combine['Credit']
 data['GLENTRY_CUSTOMERID'] = combine['Customer'].map(customer_map)
 data['GLENTRY_VENDORID'] = combine['Vendor'].map(vendor_map)
